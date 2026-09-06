@@ -224,6 +224,11 @@
   .ld-4{background:#cd9bea;} .ld-5{background:conic-gradient(#f6c453,#e8579a,#37c9c1,#f6c453);}
   .level-name{font-size:13px;color:var(--muted);margin:-10px 0 18px;}
   .upload-row{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap;}
+  .paste-hint{font-size:12px;color:var(--muted);margin:8px 0 0;}
+  .tc-art.paste-target{cursor:pointer;outline:2px dashed transparent;outline-offset:2px;}
+  .tc-art.paste-target:focus{outline-color:var(--gold);}
+  .pack-shape.paste-target{cursor:pointer;}
+  .pack-shape.paste-target:focus{outline:2px dashed var(--gold);outline-offset:2px;}
   .modal-actions{display:flex;gap:10px;margin-top:22px;}
   .toast{
     position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
@@ -269,7 +274,7 @@
       <div class="plus-center"><button class="plus-btn" id="cover-plus">+</button></div>
       <div class="foil-sheen"></div>
     </div>
-    <p class="cover-hint" id="cover-hint">Upload one image — it'll wrap the whole front of the pack.</p>
+    <p class="cover-hint" id="cover-hint">Upload an image, or paste one (Ctrl/Cmd+V) — it'll wrap the whole front of the pack.</p>
     <input type="file" id="cover-file-input" accept="image/*" class="hidden">
     <button class="btn btn-ghost" id="cover-continue" style="display:none;">Continue to cards →</button>
   </div>
@@ -331,6 +336,7 @@
           <button class="btn btn-ghost" id="ce-upload-btn">Upload photo</button>
           <input type="file" id="ce-file-input" accept="image/*" class="hidden">
         </div>
+        <p class="paste-hint">or click the art above, then paste (Ctrl/Cmd+V)</p>
       </div>
     </div>
     <div class="modal-actions">
@@ -474,44 +480,98 @@ function openPack(pack){
   loadPackScreen();
 }
 
+/* ---------------- IMAGE UPLOAD HELPERS ---------------- */
+async function uploadImage(file, folder){
+  if(!file) return { error: "No image found." };
+  if(!file.type || !file.type.startsWith("image/")) return { error: "That's not an image file." };
+  const extGuess = (file.name && file.name.includes(".")) ? file.name.split(".").pop() : (file.type.split("/")[1] || "png");
+  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${extGuess}`;
+  try{
+    const { error: upErr } = await sb.storage.from("cardmaker-images").upload(path, file, { upsert:true, contentType: file.type });
+    if(upErr) return { error: upErr.message || String(upErr) };
+    const { data: pub } = sb.storage.from("cardmaker-images").getPublicUrl(path);
+    return { url: pub.publicUrl };
+  }catch(err){
+    return { error: err.message || "Upload failed unexpectedly." };
+  }
+}
+
+function imageFileFromClipboard(e){
+  const items = (e.clipboardData && e.clipboardData.items) || [];
+  for(const item of items){
+    if(item.type && item.type.startsWith("image/")){
+      return item.getAsFile();
+    }
+  }
+  return null;
+}
+
+// Global paste listener: routes a pasted image to whichever upload target is currently open.
+document.addEventListener("paste", (e)=>{
+  const file = imageFileFromClipboard(e);
+  if(!file) return;
+  const coverScreen = document.getElementById("screen-cover");
+  const cardModal = document.getElementById("modal-card");
+  if(!coverScreen.classList.contains("hidden") && typeof handleCoverFile === "function"){
+    e.preventDefault();
+    handleCoverFile(file);
+  } else if(!cardModal.classList.contains("hidden")){
+    e.preventDefault();
+    handleCardFile(file);
+  }
+});
+
 /* ---------------- COVER EDITOR ---------------- */
+let handleCoverFile = null;
 function openCoverEditor(pack){
   currentPack = pack;
   const shapeEl = document.getElementById("cover-shape");
   const continueBtn = document.getElementById("cover-continue");
   const hint = document.getElementById("cover-hint");
   function paint(){
+    shapeEl.setAttribute("tabindex", "0");
+    shapeEl.classList.add("paste-target");
     if(pack.cover_image_url){
       shapeEl.classList.remove("blank");
       shapeEl.innerHTML = `<img class="cover-img" src="${pack.cover_image_url}"><div class="foil-sheen"></div>`;
       continueBtn.style.display = "inline-block";
-      hint.textContent = "Looking good. You can re-upload any time from inside the pack.";
+      hint.textContent = "Looking good — click the cover to replace it (upload or paste).";
     } else {
       shapeEl.classList.add("blank");
       shapeEl.innerHTML = `<div class="plus-center"><button class="plus-btn" id="cover-plus">+</button></div><div class="foil-sheen"></div>`;
-      document.getElementById("cover-plus").addEventListener("click", ()=> document.getElementById("cover-file-input").click());
+      document.getElementById("cover-plus").addEventListener("click", (e)=>{
+        e.stopPropagation();
+        document.getElementById("cover-file-input").click();
+      });
       continueBtn.style.display = "none";
-      hint.textContent = "Upload one image — it'll wrap the whole front of the pack.";
+      hint.textContent = "Upload an image, or click the pack and paste (Ctrl/Cmd+V) — it'll wrap the whole front.";
     }
   }
   paint();
   show("screen-cover");
+  shapeEl.focus();
 
-  document.getElementById("cover-file-input").onchange = async (e)=>{
-    const file = e.target.files[0];
-    if(!file) return;
+  // clicking anywhere on an already-covered pack re-opens the file picker too
+  shapeEl.onclick = ()=> document.getElementById("cover-file-input").click();
+
+  handleCoverFile = async (file)=>{
     toast("Uploading cover…");
-    const path = `covers/${session.profile}/${pack.id}-${Date.now()}.${file.name.split('.').pop()}`;
-    const { error: upErr } = await sb.storage.from("cardmaker-images").upload(path, file, { upsert:true });
-    if(upErr){ toast("Upload failed."); console.error(upErr); return; }
-    const { data: pub } = sb.storage.from("cardmaker-images").getPublicUrl(path);
-    const { error: dbErr } = await sb.from("cardmaker_packs").update({ cover_image_url: pub.publicUrl }).eq("id", pack.id);
-    if(dbErr){ toast("Couldn't save cover."); console.error(dbErr); return; }
-    pack.cover_image_url = pub.publicUrl;
+    const { url, error } = await uploadImage(file, `covers/${session.profile}`);
+    if(error){ toast("Upload failed: " + error); console.error(error); return; }
+    const { error: dbErr } = await sb.from("cardmaker_packs").update({ cover_image_url: url }).eq("id", pack.id);
+    if(dbErr){ toast("Couldn't save cover: " + dbErr.message); console.error(dbErr); return; }
+    pack.cover_image_url = url;
     const idx = packs.findIndex(p=>p.id===pack.id);
     if(idx>-1) packs[idx] = pack;
     paint();
+    shapeEl.focus();
     toast("Cover saved!");
+  };
+
+  document.getElementById("cover-file-input").onchange = (e)=>{
+    const file = e.target.files[0];
+    e.target.value = ""; // allow re-selecting the same file later
+    if(file) handleCoverFile(file);
   };
 
   continueBtn.onclick = ()=>{ currentPack = pack; loadPackScreen(); };
@@ -580,6 +640,7 @@ function openCardEditor(slotIndex, card){
   document.getElementById("ce-delete").style.display = card ? "inline-block" : "none";
   updatePreview();
   document.getElementById("modal-card").classList.remove("hidden");
+  document.getElementById("ce-preview-art").focus();
 }
 
 function updatePreview(){
@@ -592,10 +653,12 @@ function updatePreview(){
     d.classList.toggle("selected", parseInt(d.dataset.level) === editingLevel);
   });
   const artEl = document.getElementById("ce-preview-art");
+  artEl.classList.add("paste-target");
+  artEl.setAttribute("tabindex", "0");
   if(editingImageUrl){
     artEl.innerHTML = `<img src="${editingImageUrl}">`;
   } else {
-    artEl.innerHTML = `<div class="art-placeholder">Tap upload to add art</div>`;
+    artEl.innerHTML = `<div class="art-placeholder">Click here, then upload or paste (Ctrl/Cmd+V)</div>`;
   }
 }
 
@@ -607,13 +670,18 @@ document.querySelectorAll(".level-dot").forEach(dot=>{
 });
 document.getElementById("ce-name-input").addEventListener("input", updatePreview);
 
-document.getElementById("ce-upload-btn").addEventListener("click", ()=> document.getElementById("ce-file-input").click());
-document.getElementById("ce-file-input").addEventListener("change", (e)=>{
-  const file = e.target.files[0];
-  if(!file) return;
+function handleCardFile(file){
   editingImageFile = file;
   editingImageUrl = URL.createObjectURL(file); // local preview until saved
   updatePreview();
+}
+
+document.getElementById("ce-upload-btn").addEventListener("click", ()=> document.getElementById("ce-file-input").click());
+document.getElementById("ce-preview-art").addEventListener("click", ()=> document.getElementById("ce-file-input").click());
+document.getElementById("ce-file-input").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  e.target.value = ""; // allow re-selecting the same file later
+  if(file) handleCardFile(file);
 });
 
 document.getElementById("ce-cancel").addEventListener("click", ()=> document.getElementById("modal-card").classList.add("hidden"));
@@ -624,11 +692,9 @@ document.getElementById("ce-save").addEventListener("click", async ()=>{
 
   if(editingImageFile){
     toast("Uploading art…");
-    const path = `cards/${session.profile}/${currentPack.id}-${editingSlotIndex}-${Date.now()}.${editingImageFile.name.split('.').pop()}`;
-    const { error: upErr } = await sb.storage.from("cardmaker-images").upload(path, editingImageFile, { upsert:true });
-    if(upErr){ toast("Art upload failed."); console.error(upErr); return; }
-    const { data: pub } = sb.storage.from("cardmaker-images").getPublicUrl(path);
-    imageUrl = pub.publicUrl;
+    const { url, error } = await uploadImage(editingImageFile, `cards/${session.profile}`);
+    if(error){ toast("Art upload failed: " + error); console.error(error); return; }
+    imageUrl = url;
   } else if(editingCardId && editingImageUrl && editingImageUrl.startsWith("blob:")){
     imageUrl = null;
   } else if(!editingCardId){
@@ -648,7 +714,7 @@ document.getElementById("ce-save").addEventListener("click", async ()=>{
   } else {
     ({ error } = await sb.from("cardmaker_cards").upsert(payload, { onConflict: "pack_id,slot_index" }));
   }
-  if(error){ toast("Couldn't save card."); console.error(error); return; }
+  if(error){ toast("Couldn't save card: " + error.message); console.error(error); return; }
 
   document.getElementById("modal-card").classList.add("hidden");
   toast("Card saved!");
