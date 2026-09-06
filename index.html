@@ -78,6 +78,14 @@
   .auth-toggle{text-align:center;margin-top:18px;font-size:14px;color:var(--muted);}
   .auth-toggle a{color:var(--magenta);text-decoration:none;font-weight:600;cursor:pointer;}
   .auth-error{color:#d6427e;font-size:13px;margin:-6px 0 14px;min-height:16px;}
+  .profile-row{display:flex;flex-direction:column;gap:12px;margin-top:22px;}
+  .profile-btn{
+    padding:16px;border-radius:14px;border:1px solid var(--line);background:var(--surface);
+    color:var(--text);font-weight:700;font-size:16px;font-family:'Bricolage Grotesque',sans-serif;
+    transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .profile-btn:hover{border-color:var(--gold);box-shadow:0 6px 18px rgba(232,184,75,0.18);}
+  .profile-btn:active{transform:scale(0.97);}
 
   /* ---------- Header ---------- */
   .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
@@ -230,19 +238,12 @@
 <div id="screen-auth" class="screen">
   <div class="auth-card">
     <img class="auth-mark" src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNjQgNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSI0IiB5MT0iNCIgeDI9IjYwIiB5Mj0iNjAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjZjNDUzIi8+CjxzdG9wIG9mZnNldD0iMC41IiBzdG9wLWNvbG9yPSIjZTg1NzlhIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzM3YzljMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjxwb2x5Z29uIHBvaW50cz0iMzIsNCA1MS44LDEyLjIgNjAsMzIgNTEuOCw1MS44IDMyLDYwIDEyLjIsNTEuOCA0LDMyIDEyLjIsMTIuMiIgZmlsbD0idXJsKCNnKSIvPgo8cG9seWdvbiBwb2ludHM9IjMyLDE4IDQ2LDMyIDMyLDQ2IDE4LDMyIiBmaWxsPSIjMTgxMzMwIi8+Cjxwb2x5Z29uIHBvaW50cz0iMzIsMTggMzksMjUgMzIsMzIgMjUsMjUiIGZpbGw9IiMyYTIzNTAiLz4KPGxpbmUgeDE9IjI3IiB5MT0iMjMiIHgyPSIyNCIgeTI9IjI2IiBzdHJva2U9IiNmN2YxZTQiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuNiIvPgo8L3N2Zz4K" alt="Rarepress logo">
-    <h1 id="auth-title">Welcome back</h1>
-    <p class="auth-sub" id="auth-sub">Log in to open your sets.</p>
-    <div class="field">
-      <label>Username</label>
-      <input id="auth-username" type="text" autocomplete="username" placeholder="e.g. haruka">
+    <h1>Who's opening packs?</h1>
+    <p class="auth-sub">Pick a profile to see your saved packs.</p>
+    <div class="profile-row">
+      <button class="profile-btn" id="pick-haruka">Haruka</button>
+      <button class="profile-btn" id="pick-guest">Guest</button>
     </div>
-    <div class="field">
-      <label>Passcode</label>
-      <input id="auth-passcode" type="password" autocomplete="current-password" placeholder="••••••">
-    </div>
-    <div class="auth-error" id="auth-error"></div>
-    <button class="btn btn-gold btn-block" id="auth-submit">Log in</button>
-    <div class="auth-toggle" id="auth-toggle-row">New here? <a id="auth-toggle-link">Create an account</a></div>
   </div>
 </div>
 
@@ -250,7 +251,7 @@
 <div id="screen-home" class="screen hidden">
   <div class="topbar">
     <div class="brand"><img class="brand-mark" src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNjQgNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSI0IiB5MT0iNCIgeDI9IjYwIiB5Mj0iNjAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjZjNDUzIi8+CjxzdG9wIG9mZnNldD0iMC41IiBzdG9wLWNvbG9yPSIjZTg1NzlhIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzM3YzljMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjxwb2x5Z29uIHBvaW50cz0iMzIsNCA1MS44LDEyLjIgNjAsMzIgNTEuOCw1MS44IDMyLDYwIDEyLjIsNTEuOCA0LDMyIDEyLjIsMTIuMiIgZmlsbD0idXJsKCNnKSIvPgo8cG9seWdvbiBwb2ludHM9IjMyLDE4IDQ2LDMyIDMyLDQ2IDE4LDMyIiBmaWxsPSIjMTgxMzMwIi8+Cjxwb2x5Z29uIHBvaW50cz0iMzIsMTggMzksMjUgMzIsMzIgMjUsMjUiIGZpbGw9IiMyYTIzNTAiLz4KPGxpbmUgeDE9IjI3IiB5MT0iMjMiIHgyPSIyNCIgeTI9IjI2IiBzdHJva2U9IiNmN2YxZTQiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuNiIvPgo8L3N2Zz4K" alt="Rarepress logo"><div class="brand-name display">Rarepress</div></div>
-    <div class="who"><span id="who-username"></span> · <a id="logout-link">log out</a></div>
+    <div class="who"><span id="who-username"></span> · <a id="logout-link">switch profile</a></div>
   </div>
   <h2 class="section-title">Your packs</h2>
   <p class="section-sub">Tap a pack to open it, or start a new one.</p>
@@ -376,7 +377,6 @@ function showSetupNotice(){
 const LEVEL_NAMES = {1:"Common", 2:"Uncommon", 3:"Rare", 4:"Ultra", 5:"Secret"};
 
 let session = JSON.parse(localStorage.getItem("rarepress_session") || "null");
-let isSignup = false;
 let packs = [];
 let currentPack = null;
 let currentCards = [];
@@ -398,48 +398,14 @@ function toast(msg){
   t._timer = setTimeout(()=>t.classList.add("hidden"), 2400);
 }
 
-/* ---------------- AUTH ---------------- */
-function toggleAuthMode(){
-  isSignup = !isSignup;
-  document.getElementById("auth-title").textContent = isSignup ? "Create an account" : "Welcome back";
-  document.getElementById("auth-sub").textContent = isSignup ? "Pick a username and passcode." : "Log in to open your sets.";
-  document.getElementById("auth-submit").textContent = isSignup ? "Create account" : "Log in";
-  document.getElementById("auth-toggle-row").innerHTML = isSignup
-    ? 'Already have an account? <a id="auth-toggle-link">Log in</a>'
-    : 'New here? <a id="auth-toggle-link">Create an account</a>';
-  document.getElementById("auth-error").textContent = "";
+/* ---------------- PROFILE PICK ---------------- */
+function pickProfile(profile){
+  session = { profile };
+  localStorage.setItem("rarepress_session", JSON.stringify(session));
+  enterApp();
 }
-// event delegation so the re-created <a> always works, no re-binding needed
-document.getElementById("auth-toggle-row").addEventListener("click", (e)=>{
-  if(e.target && e.target.id === "auth-toggle-link"){
-    toggleAuthMode();
-  }
-});
-
-document.getElementById("auth-submit").addEventListener("click", async ()=>{
-  const username = document.getElementById("auth-username").value.trim();
-  const passcode = document.getElementById("auth-passcode").value;
-  const errEl = document.getElementById("auth-error");
-  errEl.textContent = "";
-  if(!username || !passcode){ errEl.textContent = "Enter a username and passcode."; return; }
-  try{
-    if(isSignup){
-      const { data, error } = await sb.rpc("cardmaker_signup_user", { p_username: username, p_passcode: passcode });
-      if(error){ errEl.textContent = error.message.includes("duplicate") ? "That username is taken." : error.message; return; }
-      session = { userId: data, username };
-    } else {
-      const { data, error } = await sb.rpc("cardmaker_login_user", { p_username: username, p_passcode: passcode });
-      if(error){ errEl.textContent = error.message; return; }
-      if(!data){ errEl.textContent = "Wrong username or passcode."; return; }
-      session = { userId: data, username };
-    }
-    localStorage.setItem("rarepress_session", JSON.stringify(session));
-    enterApp();
-  }catch(err){
-    errEl.textContent = "Something went wrong. Try again.";
-    console.error(err);
-  }
-});
+document.getElementById("pick-haruka").addEventListener("click", ()=> pickProfile("haruka"));
+document.getElementById("pick-guest").addEventListener("click", ()=> pickProfile("guest"));
 
 document.getElementById("logout-link").addEventListener("click", ()=>{
   session = null;
@@ -448,14 +414,14 @@ document.getElementById("logout-link").addEventListener("click", ()=>{
 });
 
 async function enterApp(){
-  document.getElementById("who-username").textContent = session.username;
+  document.getElementById("who-username").textContent = session.profile === "haruka" ? "Haruka" : "Guest";
   show("screen-home");
   await loadPacks();
 }
 
 /* ---------------- HOME / PACKS ---------------- */
 async function loadPacks(){
-  const { data, error } = await sb.from("cardmaker_packs").select("*").eq("user_id", session.userId).order("created_at", { ascending:true });
+  const { data, error } = await sb.from("cardmaker_packs").select("*").eq("profile", session.profile).order("created_at", { ascending:true });
   if(error){ toast("Couldn't load packs."); console.error(error); return; }
   packs = data || [];
   renderShelf();
@@ -495,7 +461,7 @@ document.getElementById("choose-10").addEventListener("click", ()=> createPack(1
 async function createPack(count){
   document.getElementById("modal-newpack").classList.add("hidden");
   const { data, error } = await sb.from("cardmaker_packs").insert({
-    user_id: session.userId, title: "", card_count: count
+    profile: session.profile, title: "", card_count: count
   }).select().single();
   if(error){ toast("Couldn't create pack."); console.error(error); return; }
   packs.push(data);
@@ -535,7 +501,7 @@ function openCoverEditor(pack){
     const file = e.target.files[0];
     if(!file) return;
     toast("Uploading cover…");
-    const path = `covers/${session.userId}/${pack.id}-${Date.now()}.${file.name.split('.').pop()}`;
+    const path = `covers/${session.profile}/${pack.id}-${Date.now()}.${file.name.split('.').pop()}`;
     const { error: upErr } = await sb.storage.from("cardmaker-images").upload(path, file, { upsert:true });
     if(upErr){ toast("Upload failed."); console.error(upErr); return; }
     const { data: pub } = sb.storage.from("cardmaker-images").getPublicUrl(path);
@@ -658,7 +624,7 @@ document.getElementById("ce-save").addEventListener("click", async ()=>{
 
   if(editingImageFile){
     toast("Uploading art…");
-    const path = `cards/${session.userId}/${currentPack.id}-${editingSlotIndex}-${Date.now()}.${editingImageFile.name.split('.').pop()}`;
+    const path = `cards/${session.profile}/${currentPack.id}-${editingSlotIndex}-${Date.now()}.${editingImageFile.name.split('.').pop()}`;
     const { error: upErr } = await sb.storage.from("cardmaker-images").upload(path, editingImageFile, { upsert:true });
     if(upErr){ toast("Art upload failed."); console.error(upErr); return; }
     const { data: pub } = sb.storage.from("cardmaker-images").getPublicUrl(path);
@@ -699,7 +665,7 @@ document.getElementById("ce-delete").addEventListener("click", async ()=>{
 });
 
 /* ---------------- BOOT ---------------- */
-if(session && session.userId){
+if(session && session.profile){
   enterApp();
 } else {
   show("screen-auth");
