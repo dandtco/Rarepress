@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Rarepress</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNjQgNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSI0IiB5MT0iNCIgeDI9IjYwIiB5Mj0iNjAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjZjNDUzIi8+CjxzdG9wIG9mZnNldD0iMC41IiBzdG9wLWNvbG9yPSIjZTg1NzlhIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzM3YzljMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjxwb2x5Z29uIHBvaW50cz0iMzIsNCA1MS44LDEyLjIgNjAsMzIgNTEuOCw1MS44IDMyLDYwIDEyLjIsNTEuOCA0LDMyIDEyLjIsMTIuMiIgZmlsbD0idXJsKCNnKSIvPgo8cG9seWdvbiBwb2ludHM9IjMyLDE4IDQ2LDMyIDMyLDQ2IDE4LDMyIiBmaWxsPSIjMTgxMzMwIi8+Cjxwb2x5Z29uIHBvaW50cz0iMzIsMTggMzksMjUgMzIsMzIgMjUsMjUiIGZpbGw9IiMyYTIzNTAiLz4KPGxpbmUgeDE9IjI3IiB5MT0iMjMiIHgyPSIyNCIgeTI9IjI2IiBzdHJva2U9IiNmN2YxZTQiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuNiIvPgo8L3N2Zz4K">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --panel:#ffffff;
+    --surface:#f7f4ff;
+    --cream:#f7f1e4;
+    --ink:#251c3f;
+    --text:#2b2145;
+    --gold:#e8b84b;
+    --gold-soft:#f6c453;
+    --magenta:#e8579a;
+    --cyan:#37c9c1;
+    --muted:#8a7fa8;
+    --line:rgba(43,33,69,0.12);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 12% 0%, #fff0da 0%, transparent 45%),
+      radial-gradient(circle at 92% 10%, #e3f8ee 0%, transparent 42%),
+      radial-gradient(circle at 50% 105%, #f4edff 0%, transparent 48%),
+      #ffffff;
+    background-attachment:fixed;
+    min-height:100vh;
+    font-family:'Inter',sans-serif;
+    color:var(--text);
+  }
+  h1,h2,h3,.display{
+    font-family:'Bricolage Grotesque',sans-serif;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  button{font-family:inherit;cursor:pointer;}
+  input{font-family:inherit;}
+  .hidden{display:none !important;}
+  .screen{min-height:100vh;padding:24px 20px 60px;max-width:920px;margin:0 auto;}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    border:none;border-radius:999px;padding:13px 26px;
+    font-weight:600;font-size:15px;transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:active{transform:scale(0.96);}
+  .btn-gold{background:linear-gradient(135deg,var(--gold-soft),var(--gold));color:#2a1c05;box-shadow:0 6px 18px rgba(232,184,75,0.28);}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--line);}
+  .btn-danger{background:transparent;color:#d6427e;border:1px solid rgba(214,66,126,0.35);}
+  .btn-block{width:100%;}
+
+  /* ---------- Auth ---------- */
+  #screen-auth{display:flex;align-items:center;justify-content:center;min-height:100vh;}
+  .auth-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:24px;
+    padding:36px 30px;width:100%;max-width:360px;
+    box-shadow:0 20px 50px rgba(43,33,69,0.14);
+  }
+  .auth-mark{width:44px;height:44px;display:block;margin:0 0 16px;}
+  .auth-card h1{font-size:28px;margin:0 0 4px;}
+  .auth-sub{color:var(--muted);font-size:14px;margin:0 0 26px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:none;}
+  .field input{
+    width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);
+    background:var(--surface);color:var(--text);font-size:15px;outline:none;
+  }
+  .field input:focus{border-color:var(--gold);}
+  .auth-toggle{text-align:center;margin-top:18px;font-size:14px;color:var(--muted);}
+  .auth-toggle a{color:var(--magenta);text-decoration:none;font-weight:600;cursor:pointer;}
+  .auth-error{color:#d6427e;font-size:13px;margin:-6px 0 14px;min-height:16px;}
+
+  /* ---------- Header ---------- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{width:30px;height:30px;display:block;}
+  .brand-name{font-size:19px;}
+  .back-row{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
+  .icon-btn{background:var(--panel);border:1px solid var(--line);color:var(--text);width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(43,33,69,0.08);}
+  .who{font-size:13px;color:var(--muted);}
+  .who a{color:var(--muted);text-decoration:underline;cursor:pointer;}
+
+  /* ---------- Home / shelf ---------- */
+  .section-title{font-size:22px;margin:0 0 4px;}
+  .section-sub{color:var(--muted);font-size:14px;margin:0 0 22px;}
+  .shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px;}
+  .pack-tile{cursor:pointer;text-align:center;}
+  .pack-tile .pack-title{margin-top:10px;font-size:13px;font-weight:600;color:var(--text);}
+  .pack-tile .pack-meta{font-size:11px;color:var(--muted);}
+
+  /* ---------- Pack shape ---------- */
+  .pack-shape{
+    position:relative;width:100%;aspect-ratio:0.68;border-radius:16px 16px 22px 22px;
+    background:var(--panel);
+    clip-path:polygon(0 0, 78% 0, 100% 10%, 100% 100%, 0 100%);
+    overflow:hidden;
+    box-shadow:0 10px 24px rgba(43,33,69,0.12);
+    border:1px solid var(--line);
+  }
+  .pack-shape.blank{
+    background:
+      repeating-linear-gradient(135deg, #f7f4ff 0 10px, #eee7fb 10px 20px);
+  }
+  .pack-shape img.cover-img{width:100%;height:100%;object-fit:cover;display:block;}
+  .pack-shape .plus-center{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  }
+  .plus-btn{
+    width:52px;height:52px;border-radius:50%;border:none;
+    background:linear-gradient(135deg,var(--gold-soft),var(--gold));
+    color:#2a1c05;font-size:26px;font-weight:700;line-height:1;
+    box-shadow:0 8px 20px rgba(232,184,75,0.35);
+  }
+  .plus-btn.small{width:38px;height:38px;font-size:19px;}
+  .pack-shape .foil-sheen{
+    position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.16) 50%, transparent 60%);
+    opacity:0;transition:opacity .2s;
+  }
+  .pack-tile:hover .foil-sheen{opacity:1;}
+  .pack-shape .edit-cover-btn{
+    position:absolute;bottom:8px;right:8px;background:rgba(12,9,32,0.7);
+    border:1px solid var(--line);color:var(--cream);border-radius:8px;
+    font-size:11px;padding:4px 8px;
+  }
+  .new-pack-tile .pack-shape{display:flex;align-items:center;justify-content:center;}
+
+  /* ---------- Cover editor screen ---------- */
+  .cover-stage{display:flex;flex-direction:column;align-items:center;gap:22px;margin-top:10px;}
+  .cover-stage .pack-shape{max-width:260px;}
+  .cover-hint{color:var(--muted);font-size:13px;text-align:center;max-width:280px;}
+
+  /* ---------- Card grid inside a pack ---------- */
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:18px;margin-top:6px;}
+  .slot{cursor:pointer;}
+  .slot-empty{
+    aspect-ratio:0.7;border-radius:14px;border:2px dashed var(--line);
+    display:flex;align-items:center;justify-content:center;background:var(--surface);
+  }
+
+  /* ---------- Trading card ---------- */
+  .tc{
+    position:relative;aspect-ratio:0.7;border-radius:14px;overflow:hidden;
+    background:var(--cream);color:var(--ink);
+    border:5px solid var(--gold);
+    box-shadow:0 10px 22px rgba(43,33,69,0.18);
+  }
+  .tc-name{
+    position:absolute;top:8px;left:10px;right:34px;font-weight:700;font-size:13px;
+    font-family:'Bricolage Grotesque',sans-serif;z-index:3;text-shadow:0 1px 2px rgba(255,255,255,0.6);
+  }
+  .tc-art{position:absolute;top:26px;left:8px;right:8px;bottom:14px;border-radius:8px;overflow:hidden;}
+  .tc-art img{width:100%;height:100%;object-fit:cover;display:block;}
+  .tc-art .art-placeholder{
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    font-size:11px;color:rgba(37,28,63,0.45);text-align:center;padding:10px;
+  }
+  /* level frame patterns */
+  .tc.lvl-1{ border-color:#b9ada0; }
+  .tc.lvl-1 .tc-art{background:repeating-linear-gradient(45deg,#efe9dc 0 8px,#e6dfcf 8px 16px);}
+  .tc.lvl-2{ border-color:#5fae7b; }
+  .tc.lvl-2 .tc-art{background:radial-gradient(circle at 30% 30%, #d8f0df 0 4px, transparent 5px) 0 0/16px 16px, #eaf6ee;}
+  .tc.lvl-3{ border-color:#4a90c9; }
+  .tc.lvl-3 .tc-art{background:linear-gradient(120deg,#dceefb 25%, #c7e4f8 25% 50%, #dceefb 50% 75%, #c7e4f8 75%);background-size:22px 22px;}
+  .tc.lvl-4{ border-color:#b06fce; }
+  .tc.lvl-4 .tc-art{background:conic-gradient(from 0deg, #f0d9fb, #d7c4f5, #f5d3ec, #d7c4f5, #f0d9fb);}
+  .tc.lvl-5{ border-color:transparent; border-image:linear-gradient(135deg,#f6c453,#e8579a,#37c9c1,#f6c453) 1; }
+  .tc.lvl-5 .tc-art{background:conic-gradient(from 90deg,#fce7b0,#f7c9dd,#c3f0ec,#e3d3fb,#fce7b0);}
+  .tc-rarity-tag{
+    position:absolute;bottom:6px;left:8px;font-size:9px;font-weight:600;
+    color:rgba(37,28,63,0.55);z-index:3;letter-spacing:.02em;
+  }
+  .mini-label{margin-top:8px;font-size:12px;font-weight:600;text-align:center;}
+
+  /* ---------- Modal ---------- */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(43,33,69,0.45);
+    display:flex;align-items:flex-end;justify-content:center;z-index:50;
+  }
+  @media(min-width:640px){.modal-backdrop{align-items:center;}}
+  .modal{
+    background:var(--panel);border:1px solid var(--line);width:100%;max-width:520px;
+    border-radius:22px 22px 0 0;padding:24px 22px 30px;max-height:92vh;overflow-y:auto;
+    box-shadow:0 24px 60px rgba(43,33,69,0.22);
+  }
+  @media(min-width:640px){.modal{border-radius:22px;}}
+  .modal h2{margin:0 0 18px;font-size:20px;}
+  .modal-row{display:flex;gap:10px;margin-bottom:10px;}
+  .choice-btn{
+    flex:1;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);
+    color:var(--text);font-weight:600;font-size:15px;
+  }
+  .choice-btn.active{border-color:var(--gold);background:rgba(232,184,75,0.12);}
+
+  /* card editor layout */
+  .editor-grid{display:flex;flex-direction:column;gap:20px;}
+  @media(min-width:560px){.editor-grid{flex-direction:row;align-items:flex-start;}}
+  .editor-preview{flex:0 0 180px;margin:0 auto;}
+  .editor-controls{flex:1;min-width:0;}
+  .level-picker{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+  .level-dot{
+    width:40px;height:40px;border-radius:50%;border:2px solid transparent;
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#241b3a;
+  }
+  .level-dot.selected{border-color:var(--text);box-shadow:0 0 0 2px var(--panel);}
+  .ld-1{background:#d8cfc2;} .ld-2{background:#8fd7a7;} .ld-3{background:#8ec6ee;}
+  .ld-4{background:#cd9bea;} .ld-5{background:conic-gradient(#f6c453,#e8579a,#37c9c1,#f6c453);}
+  .level-name{font-size:13px;color:var(--muted);margin:-10px 0 18px;}
+  .upload-row{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap;}
+  .modal-actions{display:flex;gap:10px;margin-top:22px;}
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+    background:var(--panel);border:1px solid var(--line);padding:12px 20px;border-radius:12px;
+    font-size:14px;z-index:100;box-shadow:0 10px 28px rgba(43,33,69,0.2);color:var(--text);
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== AUTH ===================== -->
+<div id="screen-auth" class="screen">
+  <div class="auth-card">
+    <img class="auth-mark" src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNjQgNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSI0IiB5MT0iNCIgeDI9IjYwIiB5Mj0iNjAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjZjNDUzIi8+CjxzdG9wIG9mZnNldD0iMC41IiBzdG9wLWNvbG9yPSIjZTg1NzlhIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzM3YzljMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjxwb2x5Z29uIHBvaW50cz0iMzIsNCA1MS44LDEyLjIgNjAsMzIgNTEuOCw1MS44IDMyLDYwIDEyLjIsNTEuOCA0LDMyIDEyLjIsMTIuMiIgZmlsbD0idXJsKCNnKSIvPgo8cG9seWdvbiBwb2ludHM9IjMyLDE4IDQ2LDMyIDMyLDQ2IDE4LDMyIiBmaWxsPSIjMTgxMzMwIi8+Cjxwb2x5Z29uIHBvaW50cz0iMzIsMTggMzksMjUgMzIsMzIgMjUsMjUiIGZpbGw9IiMyYTIzNTAiLz4KPGxpbmUgeDE9IjI3IiB5MT0iMjMiIHgyPSIyNCIgeTI9IjI2IiBzdHJva2U9IiNmN2YxZTQiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuNiIvPgo8L3N2Zz4K" alt="Rarepress logo">
+    <h1 id="auth-title">Welcome back</h1>
+    <p class="auth-sub" id="auth-sub">Log in to open your sets.</p>
+    <div class="field">
+      <label>Username</label>
+      <input id="auth-username" type="text" autocomplete="username" placeholder="e.g. haruka">
+    </div>
+    <div class="field">
+      <label>Passcode</label>
+      <input id="auth-passcode" type="password" autocomplete="current-password" placeholder="••••••">
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+    <button class="btn btn-gold btn-block" id="auth-submit">Log in</button>
+    <div class="auth-toggle" id="auth-toggle-row">New here? <a id="auth-toggle-link">Create an account</a></div>
+  </div>
+</div>
+
+<!-- ===================== HOME ===================== -->
+<div id="screen-home" class="screen hidden">
+  <div class="topbar">
+    <div class="brand"><img class="brand-mark" src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNjQgNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSI0IiB5MT0iNCIgeDI9IjYwIiB5Mj0iNjAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjZjNDUzIi8+CjxzdG9wIG9mZnNldD0iMC41IiBzdG9wLWNvbG9yPSIjZTg1NzlhIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzM3YzljMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjxwb2x5Z29uIHBvaW50cz0iMzIsNCA1MS44LDEyLjIgNjAsMzIgNTEuOCw1MS44IDMyLDYwIDEyLjIsNTEuOCA0LDMyIDEyLjIsMTIuMiIgZmlsbD0idXJsKCNnKSIvPgo8cG9seWdvbiBwb2ludHM9IjMyLDE4IDQ2LDMyIDMyLDQ2IDE4LDMyIiBmaWxsPSIjMTgxMzMwIi8+Cjxwb2x5Z29uIHBvaW50cz0iMzIsMTggMzksMjUgMzIsMzIgMjUsMjUiIGZpbGw9IiMyYTIzNTAiLz4KPGxpbmUgeDE9IjI3IiB5MT0iMjMiIHgyPSIyNCIgeTI9IjI2IiBzdHJva2U9IiNmN2YxZTQiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuNiIvPgo8L3N2Zz4K" alt="Rarepress logo"><div class="brand-name display">Rarepress</div></div>
+    <div class="who"><span id="who-username"></span> · <a id="logout-link">log out</a></div>
+  </div>
+  <h2 class="section-title">Your packs</h2>
+  <p class="section-sub">Tap a pack to open it, or start a new one.</p>
+  <div class="shelf" id="pack-shelf"></div>
+</div>
+
+<!-- ===================== COVER EDITOR ===================== -->
+<div id="screen-cover" class="screen hidden">
+  <div class="back-row">
+    <button class="icon-btn" id="cover-back">←</button>
+    <div class="who">Design the pack</div>
+  </div>
+  <div class="cover-stage">
+    <div class="pack-shape blank" id="cover-shape">
+      <div class="plus-center"><button class="plus-btn" id="cover-plus">+</button></div>
+      <div class="foil-sheen"></div>
+    </div>
+    <p class="cover-hint" id="cover-hint">Upload one image — it'll wrap the whole front of the pack.</p>
+    <input type="file" id="cover-file-input" accept="image/*" class="hidden">
+    <button class="btn btn-ghost" id="cover-continue" style="display:none;">Continue to cards →</button>
+  </div>
+</div>
+
+<!-- ===================== PACK (card grid) ===================== -->
+<div id="screen-pack" class="screen hidden">
+  <div class="back-row">
+    <button class="icon-btn" id="pack-back">←</button>
+    <div class="who" id="pack-title-row"></div>
+    <button class="icon-btn" id="pack-edit-cover" title="Edit cover">✎</button>
+  </div>
+  <div class="card-grid" id="card-grid"></div>
+</div>
+
+<!-- ===================== NEW PACK MODAL ===================== -->
+<div id="modal-newpack" class="modal-backdrop hidden">
+  <div class="modal">
+    <h2>New pack</h2>
+    <p class="section-sub" style="margin-top:-10px;">How many cards go inside?</p>
+    <div class="modal-row">
+      <button class="choice-btn" id="choose-5" data-n="5">5 cards</button>
+      <button class="choice-btn" id="choose-10" data-n="10">10 cards</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" id="newpack-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CARD EDITOR MODAL ===================== -->
+<div id="modal-card" class="modal-backdrop hidden">
+  <div class="modal">
+    <h2 id="card-modal-title">Design this card</h2>
+    <div class="editor-grid">
+      <div class="editor-preview">
+        <div class="tc lvl-1" id="ce-preview">
+          <div class="tc-name" id="ce-preview-name">Card name</div>
+          <div class="tc-art" id="ce-preview-art"><div class="art-placeholder">Tap upload to add art</div></div>
+          <div class="tc-rarity-tag" id="ce-preview-rarity">Common</div>
+        </div>
+      </div>
+      <div class="editor-controls">
+        <div class="field">
+          <label>Name</label>
+          <input id="ce-name-input" type="text" maxlength="24" placeholder="Card name">
+        </div>
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:8px;">Rarity pattern</label>
+        <div class="level-picker">
+          <button class="level-dot ld-1" data-level="1">1</button>
+          <button class="level-dot ld-2" data-level="2">2</button>
+          <button class="level-dot ld-3" data-level="3">3</button>
+          <button class="level-dot ld-4" data-level="4">4</button>
+          <button class="level-dot ld-5" data-level="5">5</button>
+        </div>
+        <div class="level-name" id="ce-level-name">Common</div>
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:8px;">Artwork</label>
+        <div class="upload-row">
+          <button class="btn btn-ghost" id="ce-upload-btn">Upload photo</button>
+          <input type="file" id="ce-file-input" accept="image/*" class="hidden">
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="ce-delete" style="display:none;">Delete</button>
+      <button class="btn btn-ghost" id="ce-cancel">Cancel</button>
+      <button class="btn btn-gold" id="ce-save" style="margin-left:auto;">Save card</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+/* ======================================================
+   SUPABASE SETUP — replace with your project's values
+   ====================================================== */
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const LEVEL_NAMES = {1:"Common", 2:"Uncommon", 3:"Rare", 4:"Ultra", 5:"Secret"};
+
+let session = JSON.parse(localStorage.getItem("rarepress_session") || "null");
+let isSignup = false;
+let packs = [];
+let currentPack = null;
+let currentCards = [];
+let editingSlotIndex = null;
+let editingCardId = null;
+let editingLevel = 1;
+let editingImageFile = null;
+let editingImageUrl = null;
+let pendingNewPackCount = null;
+
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.remove("hidden");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.add("hidden"), 2400);
+}
+
+/* ---------------- AUTH ---------------- */
+function toggleAuthMode(){
+  isSignup = !isSignup;
+  document.getElementById("auth-title").textContent = isSignup ? "Create an account" : "Welcome back";
+  document.getElementById("auth-sub").textContent = isSignup ? "Pick a username and passcode." : "Log in to open your sets.";
+  document.getElementById("auth-submit").textContent = isSignup ? "Create account" : "Log in";
+  document.getElementById("auth-toggle-row").innerHTML = isSignup
+    ? 'Already have an account? <a id="auth-toggle-link">Log in</a>'
+    : 'New here? <a id="auth-toggle-link">Create an account</a>';
+  document.getElementById("auth-error").textContent = "";
+}
+// event delegation so the re-created <a> always works, no re-binding needed
+document.getElementById("auth-toggle-row").addEventListener("click", (e)=>{
+  if(e.target && e.target.id === "auth-toggle-link"){
+    toggleAuthMode();
+  }
+});
+
+document.getElementById("auth-submit").addEventListener("click", async ()=>{
+  const username = document.getElementById("auth-username").value.trim();
+  const passcode = document.getElementById("auth-passcode").value;
+  const errEl = document.getElementById("auth-error");
+  errEl.textContent = "";
+  if(!username || !passcode){ errEl.textContent = "Enter a username and passcode."; return; }
+  try{
+    if(isSignup){
+      const { data, error } = await sb.rpc("cardmaker_signup_user", { p_username: username, p_passcode: passcode });
+      if(error){ errEl.textContent = error.message.includes("duplicate") ? "That username is taken." : error.message; return; }
+      session = { userId: data, username };
+    } else {
+      const { data, error } = await sb.rpc("cardmaker_login_user", { p_username: username, p_passcode: passcode });
+      if(error){ errEl.textContent = error.message; return; }
+      if(!data){ errEl.textContent = "Wrong username or passcode."; return; }
+      session = { userId: data, username };
+    }
+    localStorage.setItem("rarepress_session", JSON.stringify(session));
+    enterApp();
+  }catch(err){
+    errEl.textContent = "Something went wrong. Try again.";
+    console.error(err);
+  }
+});
+
+document.getElementById("logout-link").addEventListener("click", ()=>{
+  session = null;
+  localStorage.removeItem("rarepress_session");
+  show("screen-auth");
+});
+
+async function enterApp(){
+  document.getElementById("who-username").textContent = session.username;
+  show("screen-home");
+  await loadPacks();
+}
+
+/* ---------------- HOME / PACKS ---------------- */
+async function loadPacks(){
+  const { data, error } = await sb.from("cardmaker_packs").select("*").eq("user_id", session.userId).order("created_at", { ascending:true });
+  if(error){ toast("Couldn't load packs."); console.error(error); return; }
+  packs = data || [];
+  renderShelf();
+}
+
+function renderShelf(){
+  const shelf = document.getElementById("pack-shelf");
+  shelf.innerHTML = "";
+  packs.forEach(p=>{
+    const tile = document.createElement("div");
+    tile.className = "pack-tile";
+    tile.innerHTML = `
+      <div class="pack-shape ${p.cover_image_url ? "" : "blank"}">
+        ${p.cover_image_url ? `<img class="cover-img" src="${p.cover_image_url}">` : `<div class="plus-center"><button class="plus-btn small">+</button></div>`}
+        <div class="foil-sheen"></div>
+      </div>
+      <div class="pack-title">${p.title || "Untitled pack"}</div>
+      <div class="pack-meta">${p.card_count} cards</div>
+    `;
+    tile.addEventListener("click", ()=> openPack(p));
+    shelf.appendChild(tile);
+  });
+  const newTile = document.createElement("div");
+  newTile.className = "pack-tile new-pack-tile";
+  newTile.innerHTML = `
+    <div class="pack-shape blank"><button class="plus-btn">+</button></div>
+    <div class="pack-title">New pack</div>
+  `;
+  newTile.addEventListener("click", ()=> document.getElementById("modal-newpack").classList.remove("hidden"));
+  shelf.appendChild(newTile);
+}
+
+document.getElementById("newpack-cancel").addEventListener("click", ()=> document.getElementById("modal-newpack").classList.add("hidden"));
+document.getElementById("choose-5").addEventListener("click", ()=> createPack(5));
+document.getElementById("choose-10").addEventListener("click", ()=> createPack(10));
+
+async function createPack(count){
+  document.getElementById("modal-newpack").classList.add("hidden");
+  const { data, error } = await sb.from("cardmaker_packs").insert({
+    user_id: session.userId, title: "", card_count: count
+  }).select().single();
+  if(error){ toast("Couldn't create pack."); console.error(error); return; }
+  packs.push(data);
+  openCoverEditor(data);
+}
+
+function openPack(pack){
+  if(!pack.cover_image_url){ openCoverEditor(pack); return; }
+  currentPack = pack;
+  loadPackScreen();
+}
+
+/* ---------------- COVER EDITOR ---------------- */
+function openCoverEditor(pack){
+  currentPack = pack;
+  const shapeEl = document.getElementById("cover-shape");
+  const continueBtn = document.getElementById("cover-continue");
+  const hint = document.getElementById("cover-hint");
+  function paint(){
+    if(pack.cover_image_url){
+      shapeEl.classList.remove("blank");
+      shapeEl.innerHTML = `<img class="cover-img" src="${pack.cover_image_url}"><div class="foil-sheen"></div>`;
+      continueBtn.style.display = "inline-block";
+      hint.textContent = "Looking good. You can re-upload any time from inside the pack.";
+    } else {
+      shapeEl.classList.add("blank");
+      shapeEl.innerHTML = `<div class="plus-center"><button class="plus-btn" id="cover-plus">+</button></div><div class="foil-sheen"></div>`;
+      document.getElementById("cover-plus").addEventListener("click", ()=> document.getElementById("cover-file-input").click());
+      continueBtn.style.display = "none";
+      hint.textContent = "Upload one image — it'll wrap the whole front of the pack.";
+    }
+  }
+  paint();
+  show("screen-cover");
+
+  document.getElementById("cover-file-input").onchange = async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    toast("Uploading cover…");
+    const path = `covers/${session.userId}/${pack.id}-${Date.now()}.${file.name.split('.').pop()}`;
+    const { error: upErr } = await sb.storage.from("cardmaker-images").upload(path, file, { upsert:true });
+    if(upErr){ toast("Upload failed."); console.error(upErr); return; }
+    const { data: pub } = sb.storage.from("cardmaker-images").getPublicUrl(path);
+    const { error: dbErr } = await sb.from("cardmaker_packs").update({ cover_image_url: pub.publicUrl }).eq("id", pack.id);
+    if(dbErr){ toast("Couldn't save cover."); console.error(dbErr); return; }
+    pack.cover_image_url = pub.publicUrl;
+    const idx = packs.findIndex(p=>p.id===pack.id);
+    if(idx>-1) packs[idx] = pack;
+    paint();
+    toast("Cover saved!");
+  };
+
+  continueBtn.onclick = ()=>{ currentPack = pack; loadPackScreen(); };
+}
+
+document.getElementById("cover-back").addEventListener("click", async ()=>{
+  await loadPacks();
+  show("screen-home");
+});
+
+/* ---------------- PACK SCREEN (card grid) ---------------- */
+async function loadPackScreen(){
+  document.getElementById("pack-title-row").textContent = currentPack.title || `Pack · ${currentPack.card_count} cards`;
+  const { data, error } = await sb.from("cardmaker_cards").select("*").eq("pack_id", currentPack.id).order("slot_index", { ascending:true });
+  if(error){ toast("Couldn't load cards."); console.error(error); return; }
+  currentCards = data || [];
+  renderCardGrid();
+  show("screen-pack");
+}
+
+function renderCardGrid(){
+  const grid = document.getElementById("card-grid");
+  grid.innerHTML = "";
+  for(let i=0;i<currentPack.card_count;i++){
+    const card = currentCards.find(c=>c.slot_index===i);
+    const wrap = document.createElement("div");
+    wrap.className = "slot";
+    if(card){
+      wrap.innerHTML = `
+        <div class="tc lvl-${card.level}">
+          <div class="tc-name">${escapeHtml(card.name || "Untitled")}</div>
+          <div class="tc-art">${card.image_url ? `<img src="${card.image_url}">` : `<div class="art-placeholder"></div>`}</div>
+          <div class="tc-rarity-tag">${LEVEL_NAMES[card.level]}</div>
+        </div>
+        <div class="mini-label">${escapeHtml(card.name || "Untitled")}</div>
+      `;
+      wrap.addEventListener("click", ()=> openCardEditor(i, card));
+    } else {
+      wrap.innerHTML = `<div class="slot-empty"><button class="plus-btn small">+</button></div><div class="mini-label">Empty</div>`;
+      wrap.addEventListener("click", ()=> openCardEditor(i, null));
+    }
+    grid.appendChild(wrap);
+  }
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+document.getElementById("pack-back").addEventListener("click", async ()=>{
+  await loadPacks();
+  show("screen-home");
+});
+document.getElementById("pack-edit-cover").addEventListener("click", ()=> openCoverEditor(currentPack));
+
+/* ---------------- CARD EDITOR MODAL ---------------- */
+function openCardEditor(slotIndex, card){
+  editingSlotIndex = slotIndex;
+  editingCardId = card ? card.id : null;
+  editingLevel = card ? card.level : 1;
+  editingImageFile = null;
+  editingImageUrl = card ? card.image_url : null;
+
+  document.getElementById("card-modal-title").textContent = card ? "Edit card" : "Design this card";
+  document.getElementById("ce-name-input").value = card ? (card.name || "") : "";
+  document.getElementById("ce-delete").style.display = card ? "inline-block" : "none";
+  updatePreview();
+  document.getElementById("modal-card").classList.remove("hidden");
+}
+
+function updatePreview(){
+  const preview = document.getElementById("ce-preview");
+  preview.className = `tc lvl-${editingLevel}`;
+  document.getElementById("ce-preview-name").textContent = document.getElementById("ce-name-input").value || "Card name";
+  document.getElementById("ce-preview-rarity").textContent = LEVEL_NAMES[editingLevel];
+  document.getElementById("ce-level-name").textContent = LEVEL_NAMES[editingLevel];
+  document.querySelectorAll(".level-dot").forEach(d=>{
+    d.classList.toggle("selected", parseInt(d.dataset.level) === editingLevel);
+  });
+  const artEl = document.getElementById("ce-preview-art");
+  if(editingImageUrl){
+    artEl.innerHTML = `<img src="${editingImageUrl}">`;
+  } else {
+    artEl.innerHTML = `<div class="art-placeholder">Tap upload to add art</div>`;
+  }
+}
+
+document.querySelectorAll(".level-dot").forEach(dot=>{
+  dot.addEventListener("click", ()=>{
+    editingLevel = parseInt(dot.dataset.level);
+    updatePreview();
+  });
+});
+document.getElementById("ce-name-input").addEventListener("input", updatePreview);
+
+document.getElementById("ce-upload-btn").addEventListener("click", ()=> document.getElementById("ce-file-input").click());
+document.getElementById("ce-file-input").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  editingImageFile = file;
+  editingImageUrl = URL.createObjectURL(file); // local preview until saved
+  updatePreview();
+});
+
+document.getElementById("ce-cancel").addEventListener("click", ()=> document.getElementById("modal-card").classList.add("hidden"));
+
+document.getElementById("ce-save").addEventListener("click", async ()=>{
+  const name = document.getElementById("ce-name-input").value.trim();
+  let imageUrl = (editingCardId && !editingImageFile) ? editingImageUrl : null;
+
+  if(editingImageFile){
+    toast("Uploading art…");
+    const path = `cards/${session.userId}/${currentPack.id}-${editingSlotIndex}-${Date.now()}.${editingImageFile.name.split('.').pop()}`;
+    const { error: upErr } = await sb.storage.from("cardmaker-images").upload(path, editingImageFile, { upsert:true });
+    if(upErr){ toast("Art upload failed."); console.error(upErr); return; }
+    const { data: pub } = sb.storage.from("cardmaker-images").getPublicUrl(path);
+    imageUrl = pub.publicUrl;
+  } else if(editingCardId && editingImageUrl && editingImageUrl.startsWith("blob:")){
+    imageUrl = null;
+  } else if(!editingCardId){
+    imageUrl = editingImageUrl && !editingImageUrl.startsWith("blob:") ? editingImageUrl : null;
+  }
+
+  const payload = {
+    pack_id: currentPack.id,
+    slot_index: editingSlotIndex,
+    name, level: editingLevel,
+    image_url: imageUrl
+  };
+
+  let error;
+  if(editingCardId){
+    ({ error } = await sb.from("cardmaker_cards").update(payload).eq("id", editingCardId));
+  } else {
+    ({ error } = await sb.from("cardmaker_cards").upsert(payload, { onConflict: "pack_id,slot_index" }));
+  }
+  if(error){ toast("Couldn't save card."); console.error(error); return; }
+
+  document.getElementById("modal-card").classList.add("hidden");
+  toast("Card saved!");
+  await loadPackScreen();
+});
+
+document.getElementById("ce-delete").addEventListener("click", async ()=>{
+  if(!editingCardId) return;
+  const { error } = await sb.from("cardmaker_cards").delete().eq("id", editingCardId);
+  if(error){ toast("Couldn't delete card."); console.error(error); return; }
+  document.getElementById("modal-card").classList.add("hidden");
+  toast("Card removed.");
+  await loadPackScreen();
+});
+
+/* ---------------- BOOT ---------------- */
+if(session && session.userId){
+  enterApp();
+} else {
+  show("screen-auth");
+}
+</script>
+</body>
+</html>
